@@ -1,0 +1,22 @@
+PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+
+SELECT DISTINCT ?occurrence ?currentSortal
+WHERE {
+  ?act erp:produces ?ice .
+  ?ice erp:assertsTyping ?typing .
+  ?typing erp:typingOccurrence ?occurrence ;
+          erp:typingSortal ?currentSortal .
+  FILTER NOT EXISTS {
+    ?laterAct erp:produces ?laterICE .
+    ?laterICE erp:supersedes ?ice ;
+              erp:hasSupersessionWarrant ?warrant ;
+              erp:assertsTyping ?laterTyping .
+    ?warrant erp:warrantedReplacementOf ?ice ;
+             erp:maintenancePurpose ?purpose .
+    ?act erp:precedes ?laterAct .
+    ?laterTyping erp:typingOccurrence ?occurrence ;
+                 erp:typingSortal ?laterSortal .
+    FILTER (?currentSortal != ?laterSortal)
+  }
+}
+ORDER BY ?occurrence ?currentSortal

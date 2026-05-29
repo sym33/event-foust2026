@@ -1,0 +1,218 @@
+@prefix erp: <https://w3id.org/event-retyping-pattern/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+erp:
+    a owl:Ontology ;
+    rdfs:label "Event Re-Typing Pattern"@en ;
+    rdfs:comment "OWL vocabulary for representing retrospective event re-typing while preserving occurrence continuity and classificatory history."@en ;
+    owl:versionInfo "0.1.0" .
+
+#################################################################
+# Core classes
+#################################################################
+
+erp:Entity a owl:Class .
+
+erp:Occurrent
+    a owl:Class ;
+    rdfs:subClassOf erp:Entity ;
+    rdfs:label "occurrent"@en ;
+    rdfs:comment "Placeholder for BFO occurrents or occurrent aggregates."@en .
+
+erp:Continuant
+    a owl:Class ;
+    rdfs:subClassOf erp:Entity ;
+    owl:disjointWith erp:Occurrent .
+
+erp:InformationContentEntity
+    a owl:Class ;
+    rdfs:subClassOf erp:Continuant ;
+    rdfs:label "information content entity"@en .
+
+erp:Agent
+    a owl:Class ;
+    rdfs:subClassOf erp:Continuant .
+
+erp:ClassificationAct
+    a owl:Class ;
+    rdfs:subClassOf erp:Occurrent ;
+    rdfs:label "classification act"@en ;
+    rdfs:comment "A process in which an agent, community, instrument, or curation procedure produces or endorses classificatory information content."@en .
+
+erp:EventSortal
+    a owl:Class ;
+    rdfs:subClassOf erp:Entity ;
+    rdfs:label "event sortal proxy"@en ;
+    rdfs:comment "A metamodeling proxy for an event type, class, or controlled-vocabulary entry that supplies criteria of application and individuation. It is not asserted to be a BFO continuant; implementations may bind these proxies to ontology classes by punning, SKOS mappings, or local metamodeling conventions."@en .
+
+erp:TypingAssertion
+    a owl:Class ;
+    rdfs:subClassOf erp:InformationContentEntity ;
+    rdfs:label "typing assertion"@en .
+
+erp:RetypingRecord
+    a owl:Class ;
+    rdfs:subClassOf erp:InformationContentEntity ;
+    rdfs:label "re-typing record"@en ;
+    rdfs:comment "A reified record that a later typing warrantedly supersedes an earlier typing for the same occurrence and a distinct event sortal."@en .
+
+erp:SupersessionWarrant
+    a owl:Class ;
+    rdfs:subClassOf erp:InformationContentEntity ;
+    rdfs:label "supersession warrant"@en ;
+    rdfs:comment "A represented rule, criterion, evidence standard, review protocol, release policy, or curation procedure that warrants replacing one classificatory artifact with another for a stated maintenance purpose."@en .
+
+#################################################################
+# Object properties
+#################################################################
+
+erp:about
+    a owl:ObjectProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:Entity .
+
+erp:hasAgent
+    a owl:ObjectProperty ;
+    rdfs:domain erp:ClassificationAct ;
+    rdfs:range erp:Agent .
+
+erp:produces
+    a owl:ObjectProperty ;
+    rdfs:domain erp:ClassificationAct ;
+    rdfs:range erp:InformationContentEntity ;
+    owl:inverseOf erp:producedBy .
+
+erp:producedBy
+    a owl:ObjectProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:ClassificationAct .
+
+erp:assertsTyping
+    a owl:ObjectProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:TypingAssertion .
+
+erp:typingOccurrence
+    a owl:ObjectProperty ;
+    rdfs:domain erp:TypingAssertion ;
+    rdfs:range erp:Occurrent .
+
+erp:typingSortal
+    a owl:ObjectProperty ;
+    rdfs:domain erp:TypingAssertion ;
+    rdfs:range erp:EventSortal ;
+    rdfs:comment "Links a reified typing assertion to the event sortal proxy under which the occurrence is classified."@en .
+
+erp:precedes
+    a owl:ObjectProperty , owl:TransitiveProperty , owl:IrreflexiveProperty ;
+    rdfs:domain erp:ClassificationAct ;
+    rdfs:range erp:ClassificationAct .
+
+erp:supersedes
+    a owl:ObjectProperty , owl:IrreflexiveProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:InformationContentEntity .
+
+erp:hasSupersessionWarrant
+    a owl:ObjectProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:SupersessionWarrant ;
+    rdfs:comment "Links the later classificatory artifact to the represented warrant for replacing an earlier artifact."@en .
+
+erp:warrantedReplacementOf
+    a owl:ObjectProperty ;
+    rdfs:domain erp:SupersessionWarrant ;
+    rdfs:range erp:InformationContentEntity ;
+    rdfs:comment "Links a supersession warrant to the earlier classificatory artifact that is displaced."@en .
+
+erp:fromTyping
+    a owl:ObjectProperty ;
+    rdfs:domain erp:RetypingRecord ;
+    rdfs:range erp:TypingAssertion .
+
+erp:toTyping
+    a owl:ObjectProperty ;
+    rdfs:domain erp:RetypingRecord ;
+    rdfs:range erp:TypingAssertion .
+
+erp:retypingOccurrence
+    a owl:ObjectProperty ;
+    rdfs:domain erp:RetypingRecord ;
+    rdfs:range erp:Occurrent .
+
+erp:earlierClassificationAct
+    a owl:ObjectProperty ;
+    rdfs:domain erp:RetypingRecord ;
+    rdfs:range erp:ClassificationAct .
+
+erp:laterClassificationAct
+    a owl:ObjectProperty ;
+    rdfs:domain erp:RetypingRecord ;
+    rdfs:range erp:ClassificationAct .
+
+erp:earlierSortal
+    a owl:ObjectProperty ;
+    rdfs:domain erp:RetypingRecord ;
+    rdfs:range erp:EventSortal .
+
+erp:laterSortal
+    a owl:ObjectProperty ;
+    rdfs:domain erp:RetypingRecord ;
+    rdfs:range erp:EventSortal .
+
+erp:retypesAct
+    a owl:ObjectProperty ;
+    rdfs:domain erp:ClassificationAct ;
+    rdfs:range erp:ClassificationAct ;
+    rdfs:comment "Binary SWRL-derived shortcut: a later classification act re-types an earlier classification act."@en .
+
+erp:supersededTyping
+    a owl:ObjectProperty ;
+    rdfs:domain erp:Occurrent ;
+    rdfs:range erp:EventSortal .
+
+erp:currentTyping
+    a owl:ObjectProperty ;
+    rdfs:domain erp:Occurrent ;
+    rdfs:range erp:EventSortal .
+
+#################################################################
+# Data properties
+#################################################################
+
+erp:assertionTime
+    a owl:DatatypeProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range xsd:dateTime .
+
+erp:evidenceNote
+    a owl:DatatypeProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range xsd:string .
+
+erp:maintenancePurpose
+    a owl:DatatypeProperty ;
+    rdfs:domain erp:SupersessionWarrant ;
+    rdfs:range xsd:string .
+
+#################################################################
+# Cardinality axioms for reified records
+#################################################################
+
+erp:TypingAssertion
+    rdfs:subClassOf
+        [ a owl:Restriction ; owl:onProperty erp:typingOccurrence ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass erp:Occurrent ],
+        [ a owl:Restriction ; owl:onProperty erp:typingSortal ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass erp:EventSortal ] .
+
+erp:RetypingRecord
+    rdfs:subClassOf
+        [ a owl:Restriction ; owl:onProperty erp:fromTyping ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass erp:TypingAssertion ],
+        [ a owl:Restriction ; owl:onProperty erp:toTyping ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass erp:TypingAssertion ],
+        [ a owl:Restriction ; owl:onProperty erp:retypingOccurrence ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass erp:Occurrent ],
+        [ a owl:Restriction ; owl:onProperty erp:earlierClassificationAct ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass erp:ClassificationAct ],
+        [ a owl:Restriction ; owl:onProperty erp:laterClassificationAct ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass erp:ClassificationAct ],
+        [ a owl:Restriction ; owl:onProperty erp:earlierSortal ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass erp:EventSortal ],
+        [ a owl:Restriction ; owl:onProperty erp:laterSortal ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass erp:EventSortal ] .

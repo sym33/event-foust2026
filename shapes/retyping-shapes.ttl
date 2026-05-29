@@ -1,0 +1,180 @@
+@prefix erp: <https://w3id.org/event-retyping-pattern/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+erp:TypingAssertionShape
+    a sh:NodeShape ;
+    sh:targetClass erp:TypingAssertion ;
+    sh:property [
+        sh:path erp:typingOccurrence ;
+        sh:class erp:Occurrent ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path erp:typingSortal ;
+        sh:class erp:EventSortal ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
+
+erp:ClassificatoryICEShape
+    a sh:NodeShape ;
+    sh:targetClass erp:InformationContentEntity ;
+    sh:property [
+        sh:path erp:assertsTyping ;
+        sh:class erp:TypingAssertion ;
+    ] ;
+    sh:sparql [
+        sh:message "A classificatory ICE that asserts a typing must be about the occurrence typed by that assertion." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:assertsTyping ?typing .
+              ?typing erp:typingOccurrence ?o .
+              FILTER NOT EXISTS { $this erp:about ?o }
+            }
+        """ ;
+    ] .
+
+erp:RawTypingHistoryShape
+    a sh:NodeShape ;
+    sh:targetSubjectsOf erp:supersedes ;
+    sh:property [
+        sh:path erp:hasSupersessionWarrant ;
+        sh:class erp:SupersessionWarrant ;
+        sh:minCount 1 ;
+    ] ;
+    sh:sparql [
+        sh:message "A superseding classificatory ICE must type the same occurrence under a distinct sortal from the superseded classificatory ICE." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:supersedes ?earlier ;
+                    erp:assertsTyping ?laterTyping .
+              ?earlier erp:assertsTyping ?earlierTyping .
+              ?laterTyping erp:typingOccurrence ?o2 ;
+                           erp:typingSortal ?t2 .
+              ?earlierTyping erp:typingOccurrence ?o1 ;
+                             erp:typingSortal ?t1 .
+              FILTER (?o1 != ?o2 || ?t1 = ?t2)
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "A superseding classificatory ICE must carry a warrant that points to the superseded classificatory ICE and states a maintenance purpose." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:supersedes ?earlier .
+              FILTER NOT EXISTS {
+                $this erp:hasSupersessionWarrant ?w .
+                ?w erp:warrantedReplacementOf ?earlier ;
+                   erp:maintenancePurpose ?purpose .
+              }
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "A superseding classificatory ICE must be produced by a later classification act than the superseded classificatory ICE." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:supersedes ?earlier ;
+                    erp:assertsTyping ?laterTyping .
+              ?earlier erp:assertsTyping ?earlierTyping .
+              FILTER NOT EXISTS {
+                ?earlierAct erp:produces ?earlier .
+                ?laterAct erp:produces $this .
+                ?earlierAct erp:precedes ?laterAct .
+              }
+            }
+        """ ;
+    ] .
+
+erp:RetypingRecordShape
+    a sh:NodeShape ;
+    sh:targetClass erp:RetypingRecord ;
+    sh:property [ sh:path erp:fromTyping ; sh:class erp:TypingAssertion ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path erp:toTyping ; sh:class erp:TypingAssertion ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path erp:retypingOccurrence ; sh:class erp:Occurrent ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path erp:earlierClassificationAct ; sh:class erp:ClassificationAct ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path erp:laterClassificationAct ; sh:class erp:ClassificationAct ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path erp:earlierSortal ; sh:class erp:EventSortal ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path erp:laterSortal ; sh:class erp:EventSortal ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:sparql [
+        sh:message "A RetypingRecord must connect typings about the same occurrence as erp:retypingOccurrence." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:fromTyping ?from ;
+                    erp:toTyping ?to ;
+                    erp:retypingOccurrence ?o .
+              ?from erp:typingOccurrence ?o1 .
+              ?to erp:typingOccurrence ?o2 .
+              FILTER (?o != ?o1 || ?o != ?o2)
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "A RetypingRecord must connect distinct event sortals." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:earlierSortal ?t ;
+                    erp:laterSortal ?t .
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "A RetypingRecord earlierSortal must match the sortal asserted by fromTyping." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:fromTyping ?from ;
+                    erp:earlierSortal ?recordSortal .
+              ?from erp:typingSortal ?typingSortal .
+              FILTER (?recordSortal != ?typingSortal)
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "A RetypingRecord laterSortal must match the sortal asserted by toTyping." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:toTyping ?to ;
+                    erp:laterSortal ?recordSortal .
+              ?to erp:typingSortal ?typingSortal .
+              FILTER (?recordSortal != ?typingSortal)
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "The later classificatory ICE must supersede the earlier classificatory ICE." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:earlierClassificationAct ?c1 ;
+                    erp:laterClassificationAct ?c2 ;
+                    erp:fromTyping ?from ;
+                    erp:toTyping ?to .
+              ?c1 erp:produces ?i1 .
+              ?c2 erp:produces ?i2 .
+              ?i1 erp:assertsTyping ?from .
+              ?i2 erp:assertsTyping ?to .
+              FILTER NOT EXISTS { ?i2 erp:supersedes ?i1 }
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "The earlier classification act must precede the later classification act." ;
+        sh:select """
+            PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+            SELECT $this WHERE {
+              $this erp:earlierClassificationAct ?c1 ;
+                    erp:laterClassificationAct ?c2 .
+              FILTER NOT EXISTS { ?c1 erp:precedes ?c2 }
+            }
+        """ ;
+    ] .

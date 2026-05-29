@@ -1,0 +1,19 @@
+PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+PREFIX ex: <https://w3id.org/event-retyping-pattern/example/>
+
+ASK {
+  ?laterAct erp:produces ?laterICE .
+  ?earlierAct erp:produces ?earlierICE ;
+              erp:precedes ?laterAct .
+  ?laterICE erp:supersedes ?earlierICE ;
+            erp:hasSupersessionWarrant ?warrant ;
+            erp:assertsTyping ?laterTyping .
+  ?warrant erp:warrantedReplacementOf ?earlierICE ;
+           erp:maintenancePurpose ?purpose .
+  ?earlierICE erp:assertsTyping ?earlierTyping .
+  ?earlierTyping erp:typingOccurrence ex:enrichment_event ;
+                 erp:typingSortal ?t1 .
+  ?laterTyping erp:typingOccurrence ex:enrichment_event ;
+               erp:typingSortal ?t2 .
+  FILTER (?t1 != ?t2)
+}

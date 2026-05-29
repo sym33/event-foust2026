@@ -1,0 +1,22 @@
+PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+
+SELECT ?laterAct ?earlierAct ?occurrence ?earlierSortal ?laterSortal ?earlierICE ?laterICE ?warrant ?purpose
+WHERE {
+  ?earlierAct a erp:ClassificationAct ;
+              erp:produces ?earlierICE ;
+              erp:precedes ?laterAct .
+  ?laterAct a erp:ClassificationAct ;
+            erp:produces ?laterICE .
+  ?earlierICE erp:assertsTyping ?earlierTyping .
+  ?laterICE erp:assertsTyping ?laterTyping ;
+            erp:supersedes ?earlierICE ;
+            erp:hasSupersessionWarrant ?warrant .
+  ?warrant erp:warrantedReplacementOf ?earlierICE ;
+           erp:maintenancePurpose ?purpose .
+  ?earlierTyping erp:typingOccurrence ?occurrence ;
+                 erp:typingSortal ?earlierSortal .
+  ?laterTyping erp:typingOccurrence ?occurrence ;
+               erp:typingSortal ?laterSortal .
+  FILTER (?earlierSortal != ?laterSortal)
+}
+ORDER BY ?occurrence ?earlierAct ?laterAct

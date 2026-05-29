@@ -1,0 +1,34 @@
+PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+PREFIX ex: <https://w3id.org/event-retyping-pattern/example/>
+
+CONSTRUCT {
+  ?record a erp:RetypingRecord ;
+          erp:fromTyping ?earlierTyping ;
+          erp:toTyping ?laterTyping ;
+          erp:retypingOccurrence ?occurrence ;
+          erp:earlierClassificationAct ?earlierAct ;
+          erp:laterClassificationAct ?laterAct ;
+          erp:earlierSortal ?earlierSortal ;
+          erp:laterSortal ?laterSortal ;
+          erp:hasSupersessionWarrant ?warrant ;
+          erp:about ?occurrence .
+}
+WHERE {
+  ?earlierAct a erp:ClassificationAct ;
+              erp:produces ?earlierICE ;
+              erp:precedes ?laterAct .
+  ?laterAct a erp:ClassificationAct ;
+            erp:produces ?laterICE .
+  ?earlierICE erp:assertsTyping ?earlierTyping .
+  ?laterICE erp:assertsTyping ?laterTyping ;
+            erp:supersedes ?earlierICE ;
+            erp:hasSupersessionWarrant ?warrant .
+  ?warrant erp:warrantedReplacementOf ?earlierICE ;
+           erp:maintenancePurpose ?purpose .
+  ?earlierTyping erp:typingOccurrence ?occurrence ;
+                 erp:typingSortal ?earlierSortal .
+  ?laterTyping erp:typingOccurrence ?occurrence ;
+               erp:typingSortal ?laterSortal .
+  FILTER (?earlierSortal != ?laterSortal)
+  BIND(IRI(CONCAT(STR(ex:), "retyping-record-", SHA256(CONCAT(STR(?earlierAct), STR(?laterAct), STR(?occurrence))))) AS ?record)
+}
