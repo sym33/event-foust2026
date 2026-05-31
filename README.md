@@ -15,11 +15,19 @@ internal, characterizing, and external components depend on the sortal under
 which the occurrence is described.
 
 The re-typing case adds a further representational problem. A later
-classification may supersede an earlier one for the same traceable occurrence.
-That change is not a new event token, but it is more than additional metadata. It changes which sortal organizes the occurrence for ontology
-maintenance, querying, and downstream use. The artifact is needed because this
-case crosses the boundary between open-world ontological typing and
-closed-world maintenance operations.
+classification may reorient an earlier one for the same traceable occurrence.
+That change is not a new event token, but it is more than additional metadata.
+It changes which sortal organizes the occurrence for ontology maintenance,
+querying, and downstream use.
+
+The history is not merely cumulative. A later reorientation can change the
+maintenance role of earlier records: an earlier type assignment may move from
+current organizing type to displaced frame, preliminary reading, or
+review-relevant commitment. The earlier artifact remains present and auditable,
+but it no longer functions in the same way once the later classification has
+reoriented the record. The artifact is needed because this case crosses the
+boundary between open-world ontological typing and closed-world maintenance
+operations.
 
 No single Semantic Web layer captures the pattern cleanly:
 
@@ -27,13 +35,13 @@ No single Semantic Web layer captures the pattern cleanly:
   re-typing records.
 - SWRL states the positive derivation rule for when one classification act
   re-types another.
-- SHACL checks integrity constraints that OWL alone does not reject, both for raw supersession-based typing histories and for materialized re-typing records.
-- SPARQL derives operational views such as current types, superseded types, and
-  materialized re-typing records.
+- SHACL checks integrity constraints that OWL alone does not reject, both for raw reorientation histories and for materialized re-typing records.
+- SPARQL derives operational views such as current types, displaced types, and
+  refigured classifications.
 - The dependency-free derivation validator gives a regression check for the
   example cases used in the paper.
 
-The split follows from the modeling problem. Re-typing is not class subsumption; it is an n-ary relation among two classification acts, two information-content entities, one occurrence, two sortals, temporal order, and supersession. The artifact models that maintenance pattern instead of reducing it to a single OWL class axiom.
+The split follows from the modeling problem. Re-typing is not class subsumption; it is an n-ary relation among two classification acts, two information-content entities, one occurrence, two sortals, temporal order, and reorientation. The artifact models that non-cumulative maintenance pattern instead of reducing it to a single OWL class axiom.
 
 ## Directory Layout
 
@@ -62,8 +70,9 @@ The paper's formal pattern is represented as follows.
 | act produces artifact | `erp:produces` |
 | artifact asserts type | `erp:assertsTyping` plus `erp:typingOccurrence` and `erp:typingSortal` |
 | temporal order | `erp:precedes` |
-| supersession | `erp:supersedes` |
-| supersession warrant | `erp:SupersessionWarrant`, `erp:hasSupersessionWarrant`, `erp:warrantedReplacementOf`, `erp:maintenancePurpose` |
+| reorientation | `erp:reorients` |
+| reorientation basis | `erp:ReorientationBasis`, `erp:hasReorientationBasis`, `erp:basisForReorientationOf`, `erp:maintenancePurpose`, `erp:basisScope`, `erp:hasAuthorizingSource` |
+| historical role shift | `erp:HistoricalRole`, `erp:CurrentFrame`, `erp:DisplacedFrame`, `erp:refiguredBy` |
 | re-typing | `erp:RetypingRecord` or derived `erp:retypesAct` |
 
 The positive derivation condition is:
@@ -76,8 +85,9 @@ Retypes(c2,c1,o,T1,T2) iff
   i2 asserts that o has sortal T2,
   T1 and T2 are distinct,
   c1 precedes c2,
-  i2 supersedes i1,
-  i2 carries a supersession warrant that points to i1 and states a maintenance purpose.
+  i2 reorients i1,
+  i2 carries a reorientation basis that points to i1, states a maintenance purpose,
+  gives a scope, and names an authorizing source or workflow.
 ```
 
 ## Dependency-Free Derivation Validation
@@ -87,14 +97,16 @@ The derivation validator checks the examples without requiring an RDF stack. Its
 ```text
 Validation passed.
 Loaded example files: 6
-Loaded triples: 150
+Loaded triples: 196
 Derived Retypes facts: 4
   later=ex:classify_chain_2, earlier=ex:classify_chain_1, occurrence=ex:chain_event, from=ex:T1, to=ex:T2
   later=ex:classify_chain_3, earlier=ex:classify_chain_2, occurrence=ex:chain_event, from=ex:T2, to=ex:T3
   later=ex:classify_disease_2, earlier=ex:classify_disease_1, occurrence=ex:disease_episode_17, from=ex:AtypicalPneumoniaEpisode, to=ex:COVID19Episode
   later=ex:classify_seismic_2, earlier=ex:classify_seismic_1, occurrence=ex:seismic_event_42, from=ex:TectonicEarthquake, to=ex:InducedSeismicity
 Negative checks passed: enrichment and contested cases derive no Retypes facts.
-Chain check passed: T1 and T2 superseded; T3 current.
+Refigured classification facts: 5
+Historical role assertions checked: 10
+Chain check passed: T1 and T2 displaced; T3 current.
 ```
 
 The validator uses only the standard library. It parses the simple Turtle style
@@ -111,11 +123,11 @@ Validation Report
 Conforms: True
 ```
 
-This loads the ontology and all example graphs, including the materialized re-typing records, and checks both raw typing-history supersessions and reified records.
+This loads the ontology and all example graphs, including the materialized re-typing records, and checks both raw typing-history reorientations and reified records.
 
 ## SPARQL Validation
 
-The SPARQL regression check loads the ontology and examples into RDFLib and checks the query results. Expected output includes four derived re-typing rows, four superseded-type rows, six current-type rows, 40 constructed record triples, and `false` for both negative ASK queries.
+The SPARQL regression check loads the ontology and examples into RDFLib and checks the query results. Expected output includes four derived re-typing rows, four displaced-type rows, five refigured-classification rows, six current-type rows, 40 constructed record triples, and `false` for both negative ASK queries.
 
 ## Example Cases
 
@@ -123,8 +135,12 @@ The SPARQL regression check loads the ontology and examples into RDFLib and chec
 
 `examples/disease-reclassification.ttl` represents a case in which an
 occurrence first classified as an atypical pneumonia episode is later classified
-as a COVID-19 episode. The later classificatory artifact supersedes the earlier
+as a COVID-19 episode. The later classificatory artifact reorients the earlier
 one. The same occurrence is retained; the organizing sortal changes.
+The earlier pneumonia artifact is also assigned `erp:DisplacedFrame` and
+`erp:ReviewRelevantCommitment`; the later COVID-19 artifact is assigned
+`erp:CurrentFrame`. The example therefore records that the old classification
+has changed historical role, not merely that a newer fact was appended.
 
 Expected result:
 
@@ -139,6 +155,10 @@ Retypes(classify_disease_2, classify_disease_1, disease_episode_17,
 occurrence initially classified as a tectonic earthquake and later classified as
 induced seismicity after additional evidence. This is stronger than enrichment:
 the later sortal changes the relevant explanatory and maintenance commitments.
+The tectonic artifact is kept as a displaced and review-relevant commitment,
+because earlier alerts, hazard assumptions, and institutional decisions may
+still need to be audited under the older frame. The induced-seismicity artifact
+becomes the current frame for catalog maintenance.
 
 Expected result:
 
@@ -162,7 +182,7 @@ No Retypes fact.
 ### Contested Negative Case
 
 `examples/contested-negative.ttl` represents two different classifications
-without a supersession relation. The model records disagreement or coexistence,
+without a reorientation relation. The model records disagreement or coexistence,
 not re-typing.
 
 Expected result:
@@ -173,8 +193,12 @@ No Retypes fact.
 
 ### Chain History
 
-`examples/chain-history.ttl` represents a sequence of superseding
-classifications. The current type is the final non-superseded sortal.
+`examples/chain-history.ttl` represents a sequence of reorienting
+classifications. The current type is the final non-displaced sortal.
+It also materializes the non-cumulative part of the pattern: `ice_chain_3`
+refigures both `ice_chain_2` directly and `ice_chain_1` indirectly, so an
+earlier classification can change role because of a later event in the
+classification history.
 
 Expected result:
 
@@ -229,15 +253,15 @@ Both ASK queries should return `false`. The bundled regression validator checks 
 
 ## SHACL Validation
 
-The SHACL shapes check the integrity of typing assertions, raw typing-history supersessions, and materialized re-typing records. After loading the ontology and examples, a SHACL engine should confirm that classificatory ICEs point to the same occurrence as their typing assertion and that superseding classificatory ICEs support a genuine re-typing candidate. After adding `examples/materialized-retyping-records.ttl`, it should also validate the reified records:
+The SHACL shapes check the integrity of typing assertions, raw typing-history reorientations, and materialized re-typing records. After loading the ontology and examples, a SHACL engine should confirm that classificatory ICEs point to the same occurrence as their typing assertion and that reorienting classificatory ICEs support a genuine re-typing candidate. After adding `examples/materialized-retyping-records.ttl`, it should also validate the reified records:
 
 - each typing assertion has exactly one occurrence and one sortal;
-- each raw supersession used for re-typing connects the same occurrence under distinct sortals;
-- each raw supersession used for re-typing carries a supersession warrant and maintenance purpose;
-- each raw supersession is produced by a later classification act than the superseded typing;
+- each raw reorientation used for re-typing connects the same occurrence under distinct sortals;
+- each raw reorientation used for re-typing carries a reorientation basis, maintenance purpose, scope, and authorizing source;
+- each raw reorientation is produced by a later classification act than the displaced typing;
 - each materialized re-typing record has one earlier and one later act;
 - the earlier and later sortals differ;
-- the later classificatory artifact supersedes the earlier one;
+- the later classificatory artifact reorients the earlier one;
 - the earlier act precedes the later act;
 - the record's occurrence matches the occurrence in both typing assertions.
 

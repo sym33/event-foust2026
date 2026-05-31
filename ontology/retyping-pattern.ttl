@@ -36,6 +36,12 @@ erp:Agent
     a owl:Class ;
     rdfs:subClassOf erp:Continuant .
 
+erp:AuthorizationSource
+    a owl:Class ;
+    rdfs:subClassOf erp:Entity ;
+    rdfs:label "authorization source"@en ;
+    rdfs:comment "A workflow, publication, review body, rule, instrument-governed procedure, or community practice that licenses a reorientation basis for a stated maintenance purpose."@en .
+
 erp:ClassificationAct
     a owl:Class ;
     rdfs:subClassOf erp:Occurrent ;
@@ -57,13 +63,34 @@ erp:RetypingRecord
     a owl:Class ;
     rdfs:subClassOf erp:InformationContentEntity ;
     rdfs:label "re-typing record"@en ;
-    rdfs:comment "A reified record that a later typing warrantedly supersedes an earlier typing for the same occurrence and a distinct event sortal."@en .
+    rdfs:comment "A reified record that a later typing reorients an earlier typing on a represented basis for the same occurrence and a distinct event sortal."@en .
 
-erp:SupersessionWarrant
+erp:ReorientationBasis
     a owl:Class ;
     rdfs:subClassOf erp:InformationContentEntity ;
-    rdfs:label "supersession warrant"@en ;
-    rdfs:comment "A represented rule, criterion, evidence standard, review protocol, release policy, or curation procedure that warrants replacing one classificatory artifact with another for a stated maintenance purpose."@en .
+    rdfs:label "reorientation basis"@en ;
+    rdfs:comment "A represented rule, criterion, evidence standard, review protocol, release policy, or curation procedure that supplies the basis for reorienting one classificatory artifact by another for a stated maintenance purpose."@en .
+
+erp:HistoricalRole
+    a owl:Class ;
+    rdfs:label "historical role"@en ;
+    rdfs:comment "A maintenance role assigned to a classificatory artifact within a selected classification-history view."@en .
+
+erp:CurrentFrame
+    a erp:HistoricalRole ;
+    rdfs:label "current frame"@en .
+
+erp:DisplacedFrame
+    a erp:HistoricalRole ;
+    rdfs:label "displaced frame"@en .
+
+erp:PreliminaryReading
+    a erp:HistoricalRole ;
+    rdfs:label "preliminary reading"@en .
+
+erp:ReviewRelevantCommitment
+    a erp:HistoricalRole ;
+    rdfs:label "review-relevant commitment"@en .
 
 #################################################################
 # Object properties
@@ -111,22 +138,40 @@ erp:precedes
     rdfs:domain erp:ClassificationAct ;
     rdfs:range erp:ClassificationAct .
 
-erp:supersedes
+erp:reorients
     a owl:ObjectProperty , owl:IrreflexiveProperty ;
     rdfs:domain erp:InformationContentEntity ;
     rdfs:range erp:InformationContentEntity .
 
-erp:hasSupersessionWarrant
+erp:hasReorientationBasis
     a owl:ObjectProperty ;
     rdfs:domain erp:InformationContentEntity ;
-    rdfs:range erp:SupersessionWarrant ;
-    rdfs:comment "Links the later classificatory artifact to the represented warrant for replacing an earlier artifact."@en .
+    rdfs:range erp:ReorientationBasis ;
+    rdfs:comment "Links the later classificatory artifact to the represented reorientation basis for reorienting an earlier artifact."@en .
 
-erp:warrantedReplacementOf
+erp:basisForReorientationOf
     a owl:ObjectProperty ;
-    rdfs:domain erp:SupersessionWarrant ;
+    rdfs:domain erp:ReorientationBasis ;
     rdfs:range erp:InformationContentEntity ;
-    rdfs:comment "Links a supersession warrant to the earlier classificatory artifact that is displaced."@en .
+    rdfs:comment "Links a reorientation basis to the earlier classificatory artifact that is displaced."@en .
+
+erp:hasAuthorizingSource
+    a owl:ObjectProperty ;
+    rdfs:domain erp:ReorientationBasis ;
+    rdfs:range erp:AuthorizationSource ;
+    rdfs:comment "Links a reorientation basis to the workflow, publication, rule, review body, or community practice that authorizes the role change for the stated scope."@en .
+
+erp:hasHistoricalRole
+    a owl:ObjectProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:HistoricalRole ;
+    rdfs:comment "Assigns a maintenance role to a classificatory artifact in the current classification-history view."@en .
+
+erp:refiguredBy
+    a owl:ObjectProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:InformationContentEntity ;
+    rdfs:comment "Links an earlier classificatory artifact to a later artifact whose reorientation changes the earlier artifact's maintenance role, directly or through a reorientation chain."@en .
 
 erp:fromTyping
     a owl:ObjectProperty ;
@@ -169,7 +214,7 @@ erp:retypesAct
     rdfs:range erp:ClassificationAct ;
     rdfs:comment "Binary SWRL-derived shortcut: a later classification act re-types an earlier classification act."@en .
 
-erp:supersededTyping
+erp:displacedTyping
     a owl:ObjectProperty ;
     rdfs:domain erp:Occurrent ;
     rdfs:range erp:EventSortal .
@@ -195,8 +240,14 @@ erp:evidenceNote
 
 erp:maintenancePurpose
     a owl:DatatypeProperty ;
-    rdfs:domain erp:SupersessionWarrant ;
+    rdfs:domain erp:ReorientationBasis ;
     rdfs:range xsd:string .
+
+erp:basisScope
+    a owl:DatatypeProperty ;
+    rdfs:domain erp:ReorientationBasis ;
+    rdfs:range xsd:string ;
+    rdfs:comment "States the record scope, domain view, or maintenance context in which the reorientation basis is authorized."@en .
 
 #################################################################
 # Cardinality axioms for reified records

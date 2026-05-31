@@ -1,0 +1,15 @@
+PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+
+SELECT DISTINCT ?priorICE ?reorientingICE ?occurrence ?priorSortal ?reorientingSortal ?newRole
+WHERE {
+  ?reorientingICE erp:reorients+ ?priorICE ;
+                  erp:assertsTyping ?reorientingTyping .
+  ?priorICE erp:assertsTyping ?priorTyping .
+  ?priorTyping erp:typingOccurrence ?occurrence ;
+               erp:typingSortal ?priorSortal .
+  ?reorientingTyping erp:typingOccurrence ?occurrence ;
+                     erp:typingSortal ?reorientingSortal .
+  FILTER (?priorSortal != ?reorientingSortal)
+  BIND (erp:DisplacedFrame AS ?newRole)
+}
+ORDER BY ?occurrence ?priorSortal ?reorientingSortal

@@ -4,12 +4,13 @@
 ex:TectonicEarthquake a erp:EventSortal .
 ex:InducedSeismicity a erp:EventSortal .
 ex:SeismicReviewAuthority a erp:Agent .
+ex:CatalogReviewWorkflow a erp:AuthorizationSource .
 ex:seismic_event_42 a erp:Occurrent .
 ex:classify_seismic_1 a erp:ClassificationAct .
 ex:classify_seismic_2 a erp:ClassificationAct .
 ex:ice_seismic_1 a erp:InformationContentEntity .
 ex:ice_seismic_2 a erp:InformationContentEntity .
-ex:warrant_seismic_2 a erp:SupersessionWarrant .
+ex:basis_seismic_2 a erp:ReorientationBasis .
 ex:typing_seismic_1 a erp:TypingAssertion .
 ex:typing_seismic_2 a erp:TypingAssertion .
 ex:classify_seismic_1 erp:hasAgent ex:SeismicReviewAuthority .
@@ -25,7 +26,13 @@ ex:typing_seismic_1 erp:typingOccurrence ex:seismic_event_42 .
 ex:typing_seismic_2 erp:typingOccurrence ex:seismic_event_42 .
 ex:typing_seismic_1 erp:typingSortal ex:TectonicEarthquake .
 ex:typing_seismic_2 erp:typingSortal ex:InducedSeismicity .
-ex:ice_seismic_2 erp:supersedes ex:ice_seismic_1 .
-ex:ice_seismic_2 erp:hasSupersessionWarrant ex:warrant_seismic_2 .
-ex:warrant_seismic_2 erp:warrantedReplacementOf ex:ice_seismic_1 .
-ex:warrant_seismic_2 erp:maintenancePurpose "catalog maintenance after induced-seismicity review" .
+ex:ice_seismic_2 erp:reorients ex:ice_seismic_1 .
+ex:ice_seismic_1 erp:refiguredBy ex:ice_seismic_2 .
+ex:ice_seismic_1 erp:hasHistoricalRole erp:DisplacedFrame .
+ex:ice_seismic_1 erp:hasHistoricalRole erp:ReviewRelevantCommitment .
+ex:ice_seismic_2 erp:hasHistoricalRole erp:CurrentFrame .
+ex:ice_seismic_2 erp:hasReorientationBasis ex:basis_seismic_2 .
+ex:basis_seismic_2 erp:basisForReorientationOf ex:ice_seismic_1 .
+ex:basis_seismic_2 erp:maintenancePurpose "catalog maintenance after induced-seismicity review" .
+ex:basis_seismic_2 erp:basisScope "regional seismic catalog maintenance" .
+ex:basis_seismic_2 erp:hasAuthorizingSource ex:CatalogReviewWorkflow .

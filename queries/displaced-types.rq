@@ -1,12 +1,10 @@
 PREFIX erp: <https://w3id.org/event-retyping-pattern/>
 
-SELECT ?laterAct ?earlierAct ?occurrence ?earlierSortal ?laterSortal ?earlierICE ?laterICE ?basis ?purpose ?basisScope ?authorizingSource
+SELECT DISTINCT ?occurrence ?displacedSortal
 WHERE {
-  ?earlierAct a erp:ClassificationAct ;
-              erp:produces ?earlierICE ;
+  ?earlierAct erp:produces ?earlierICE ;
               erp:precedes ?laterAct .
-  ?laterAct a erp:ClassificationAct ;
-            erp:produces ?laterICE .
+  ?laterAct erp:produces ?laterICE .
   ?earlierICE erp:assertsTyping ?earlierTyping .
   ?laterICE erp:assertsTyping ?laterTyping ;
             erp:reorients ?earlierICE ;
@@ -16,9 +14,9 @@ WHERE {
          erp:basisScope ?basisScope ;
          erp:hasAuthorizingSource ?authorizingSource .
   ?earlierTyping erp:typingOccurrence ?occurrence ;
-                 erp:typingSortal ?earlierSortal .
+                 erp:typingSortal ?displacedSortal .
   ?laterTyping erp:typingOccurrence ?occurrence ;
                erp:typingSortal ?laterSortal .
-  FILTER (?earlierSortal != ?laterSortal)
+  FILTER (?displacedSortal != ?laterSortal)
 }
-ORDER BY ?occurrence ?earlierAct ?laterAct
+ORDER BY ?occurrence ?displacedSortal

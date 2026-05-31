@@ -8,11 +8,13 @@ WHERE {
           erp:typingSortal ?currentSortal .
   FILTER NOT EXISTS {
     ?laterAct erp:produces ?laterICE .
-    ?laterICE erp:supersedes ?ice ;
-              erp:hasSupersessionWarrant ?warrant ;
+    ?laterICE erp:reorients ?ice ;
+              erp:hasReorientationBasis ?basis ;
               erp:assertsTyping ?laterTyping .
-    ?warrant erp:warrantedReplacementOf ?ice ;
-             erp:maintenancePurpose ?purpose .
+    ?basis erp:basisForReorientationOf ?ice ;
+           erp:maintenancePurpose ?purpose ;
+           erp:basisScope ?basisScope ;
+           erp:hasAuthorizingSource ?authorizingSource .
     ?act erp:precedes ?laterAct .
     ?laterTyping erp:typingOccurrence ?occurrence ;
                  erp:typingSortal ?laterSortal .

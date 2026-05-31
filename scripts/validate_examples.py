@@ -6,8 +6,8 @@ It checks the same boundary conditions as the SPARQL queries:
 
 - positive disease and seismic re-typing cases are derived;
 - enrichment under the same sortal does not derive re-typing;
-- contested classification without supersession does not derive re-typing;
-- chain histories preserve intermediate superseded sortals and current typing.
+- contested classification without reorientation does not derive re-typing;
+- chain histories preserve intermediate displaced sortals and current typing.
 
 For full RDF/SHACL validation, use an RDF engine such as pySHACL against
 ontology/retyping-pattern.ttl and shapes/retyping-shapes.ttl.
@@ -35,6 +35,15 @@ class Retypes:
     occurrence: str
     earlier_sortal: str
     later_sortal: str
+
+
+@dataclass(frozen=True)
+class Refigured:
+    prior_ice: str
+    reorienting_ice: str
+    occurrence: str
+    prior_sortal: str
+    reorienting_sortal: str
 
 
 def expand(token: str, prefixes: dict[str, str]) -> str:
@@ -87,10 +96,12 @@ def subjects(triples: set[tuple[str, str, str]], predicate: str, obj: str) -> se
 def derive_retypes(triples: set[tuple[str, str, str]]) -> set[Retypes]:
     produces = ERP + "produces"
     precedes = ERP + "precedes"
-    supersedes = ERP + "supersedes"
-    has_warrant = ERP + "hasSupersessionWarrant"
-    warranted_replacement_of = ERP + "warrantedReplacementOf"
+    reorients = ERP + "reorients"
+    has_basis = ERP + "hasReorientationBasis"
+    basis_for_replacement_of = ERP + "basisForReorientationOf"
     maintenance_purpose = ERP + "maintenancePurpose"
+    basis_scope = ERP + "basisScope"
+    has_authorizing_source = ERP + "hasAuthorizingSource"
     asserts_typing = ERP + "assertsTyping"
     typing_occurrence = ERP + "typingOccurrence"
     typing_sortal = ERP + "typingSortal"
@@ -101,13 +112,15 @@ def derive_retypes(triples: set[tuple[str, str, str]]) -> set[Retypes]:
             continue
         for later_act in objects(triples, earlier_act, precedes):
             for later_ice in objects(triples, later_act, produces):
-                if (later_ice, supersedes, earlier_ice) not in triples:
+                if (later_ice, reorients, earlier_ice) not in triples:
                     continue
-                warrants = objects(triples, later_ice, has_warrant)
+                bases = objects(triples, later_ice, has_basis)
                 if not any(
-                    (warrant, warranted_replacement_of, earlier_ice) in triples
-                    and objects(triples, warrant, maintenance_purpose)
-                    for warrant in warrants
+                    (basis, basis_for_replacement_of, earlier_ice) in triples
+                    and objects(triples, basis, maintenance_purpose)
+                    and objects(triples, basis, basis_scope)
+                    and objects(triples, basis, has_authorizing_source)
+                    for basis in bases
                 ):
                     continue
                 for earlier_typing in objects(triples, earlier_ice, asserts_typing):
@@ -136,7 +149,7 @@ def current_types(triples: set[tuple[str, str, str]], retypes: set[Retypes]) -> 
     typing_occurrence = ERP + "typingOccurrence"
     typing_sortal = ERP + "typingSortal"
 
-    superseded = {(r.earlier_act, r.occurrence, r.earlier_sortal) for r in retypes}
+    displaced = {(r.earlier_act, r.occurrence, r.earlier_sortal) for r in retypes}
     current: set[tuple[str, str]] = set()
     for act, _, ice in triples:
         if _ != produces:
@@ -144,9 +157,44 @@ def current_types(triples: set[tuple[str, str, str]], retypes: set[Retypes]) -> 
         for typing in objects(triples, ice, asserts_typing):
             for occurrence in objects(triples, typing, typing_occurrence):
                 for sortal in objects(triples, typing, typing_sortal):
-                    if (act, occurrence, sortal) not in superseded:
+                    if (act, occurrence, sortal) not in displaced:
                         current.add((occurrence, sortal))
     return current
+
+
+def derive_refigured(triples: set[tuple[str, str, str]]) -> set[Refigured]:
+    reorients = ERP + "reorients"
+    asserts_typing = ERP + "assertsTyping"
+    typing_occurrence = ERP + "typingOccurrence"
+    typing_sortal = ERP + "typingSortal"
+
+    adjacency: dict[str, set[str]] = {}
+    for later_ice, predicate, prior_ice in triples:
+        if predicate == reorients:
+            adjacency.setdefault(later_ice, set()).add(prior_ice)
+
+    def earlier_chain(later_ice: str) -> set[str]:
+        seen: set[str] = set()
+        stack = list(adjacency.get(later_ice, set()))
+        while stack:
+            prior = stack.pop()
+            if prior in seen:
+                continue
+            seen.add(prior)
+            stack.extend(adjacency.get(prior, set()))
+        return seen
+
+    out: set[Refigured] = set()
+    for later_ice in adjacency:
+        for prior_ice in earlier_chain(later_ice):
+            for prior_typing in objects(triples, prior_ice, asserts_typing):
+                for later_typing in objects(triples, later_ice, asserts_typing):
+                    for occurrence in objects(triples, prior_typing, typing_occurrence) & objects(triples, later_typing, typing_occurrence):
+                        for prior_sortal in objects(triples, prior_typing, typing_sortal):
+                            for later_sortal in objects(triples, later_typing, typing_sortal):
+                                if prior_sortal != later_sortal:
+                                    out.add(Refigured(prior_ice, later_ice, occurrence, prior_sortal, later_sortal))
+    return out
 
 
 def compact(value: str) -> str:
@@ -157,8 +205,10 @@ def main() -> None:
     example_paths = sorted(EXAMPLES.glob("*.ttl"))
     triples = load_triples(example_paths)
     retypes = derive_retypes(triples)
+    refigured = derive_refigured(triples)
     current = current_types(triples, retypes)
-    superseded = {(r.occurrence, r.earlier_sortal) for r in retypes}
+    displaced = {(r.occurrence, r.earlier_sortal) for r in retypes}
+    historical_role = ERP + "hasHistoricalRole"
 
     expected_retypes = {
         Retypes(EX + "classify_disease_2", EX + "classify_disease_1", EX + "disease_episode_17", EX + "AtypicalPneumoniaEpisode", EX + "COVID19Episode"),
@@ -175,11 +225,28 @@ def main() -> None:
     assert (EX + "enrichment_event", EX + "StableSyndrome") in current
     assert all(r.occurrence != EX + "enrichment_event" for r in retypes)
     assert all(r.occurrence != EX + "contested_event" for r in retypes)
-    assert (EX + "chain_event", EX + "T1") in superseded
-    assert (EX + "chain_event", EX + "T2") in superseded
+    assert (EX + "chain_event", EX + "T1") in displaced
+    assert (EX + "chain_event", EX + "T2") in displaced
     assert (EX + "chain_event", EX + "T3") in current
     assert (EX + "chain_event", EX + "T1") not in current
     assert (EX + "chain_event", EX + "T2") not in current
+    assert Refigured(EX + "ice_chain_1", EX + "ice_chain_3", EX + "chain_event", EX + "T1", EX + "T3") in refigured
+    assert len(refigured) == 5
+    expected_roles = {
+        (EX + "ice_disease_1", historical_role, ERP + "DisplacedFrame"),
+        (EX + "ice_disease_1", historical_role, ERP + "ReviewRelevantCommitment"),
+        (EX + "ice_disease_2", historical_role, ERP + "CurrentFrame"),
+        (EX + "ice_seismic_1", historical_role, ERP + "DisplacedFrame"),
+        (EX + "ice_seismic_1", historical_role, ERP + "ReviewRelevantCommitment"),
+        (EX + "ice_seismic_2", historical_role, ERP + "CurrentFrame"),
+        (EX + "ice_chain_1", historical_role, ERP + "DisplacedFrame"),
+        (EX + "ice_chain_2", historical_role, ERP + "DisplacedFrame"),
+        (EX + "ice_chain_2", historical_role, ERP + "ReviewRelevantCommitment"),
+        (EX + "ice_chain_3", historical_role, ERP + "CurrentFrame"),
+    }
+    missing_roles = expected_roles - triples
+    if missing_roles:
+        raise AssertionError(f"Missing historical role assertions: {missing_roles}")
 
     print("Validation passed.")
     print(f"Loaded example files: {len(example_paths)}")
@@ -199,7 +266,9 @@ def main() -> None:
             )
         )
     print("Negative checks passed: enrichment and contested cases derive no Retypes facts.")
-    print("Chain check passed: T1 and T2 superseded; T3 current.")
+    print(f"Refigured classification facts: {len(refigured)}")
+    print(f"Historical role assertions checked: {len(expected_roles)}")
+    print("Chain check passed: T1 and T2 displaced; T3 current.")
 
 
 if __name__ == "__main__":

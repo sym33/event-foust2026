@@ -6,7 +6,8 @@ from rdflib import Graph
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
     "derive-retypes.rq": ("rows", 4),
-    "superseded-types.rq": ("rows", 4),
+    "displaced-types.rq": ("rows", 4),
+    "refigured-classifications.rq": ("rows", 5),
     "current-types.rq": ("rows", 6),
     "construct-retyping-records.rq": ("triples", 40),
     "ask-no-enrichment-retyping.rq": ("ask", False),

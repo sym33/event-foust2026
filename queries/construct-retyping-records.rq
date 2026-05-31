@@ -10,7 +10,7 @@ CONSTRUCT {
           erp:laterClassificationAct ?laterAct ;
           erp:earlierSortal ?earlierSortal ;
           erp:laterSortal ?laterSortal ;
-          erp:hasSupersessionWarrant ?warrant ;
+          erp:hasReorientationBasis ?basis ;
           erp:about ?occurrence .
 }
 WHERE {
@@ -21,10 +21,12 @@ WHERE {
             erp:produces ?laterICE .
   ?earlierICE erp:assertsTyping ?earlierTyping .
   ?laterICE erp:assertsTyping ?laterTyping ;
-            erp:supersedes ?earlierICE ;
-            erp:hasSupersessionWarrant ?warrant .
-  ?warrant erp:warrantedReplacementOf ?earlierICE ;
-           erp:maintenancePurpose ?purpose .
+            erp:reorients ?earlierICE ;
+            erp:hasReorientationBasis ?basis .
+  ?basis erp:basisForReorientationOf ?earlierICE ;
+         erp:maintenancePurpose ?purpose ;
+         erp:basisScope ?basisScope ;
+         erp:hasAuthorizingSource ?authorizingSource .
   ?earlierTyping erp:typingOccurrence ?occurrence ;
                  erp:typingSortal ?earlierSortal .
   ?laterTyping erp:typingOccurrence ?occurrence ;

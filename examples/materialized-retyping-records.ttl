@@ -10,7 +10,7 @@ ex:disease_record erp:earlierSortal ex:AtypicalPneumoniaEpisode .
 ex:disease_record erp:laterSortal ex:COVID19Episode .
 ex:disease_record erp:fromTyping ex:typing_disease_1 .
 ex:disease_record erp:toTyping ex:typing_disease_2 .
-ex:disease_record erp:hasSupersessionWarrant ex:warrant_disease_2 .
+ex:disease_record erp:hasReorientationBasis ex:basis_disease_2 .
 
 ex:seismic_record rdf:type erp:RetypingRecord .
 ex:seismic_record erp:retypingOccurrence ex:seismic_event_42 .
@@ -20,7 +20,7 @@ ex:seismic_record erp:earlierSortal ex:TectonicEarthquake .
 ex:seismic_record erp:laterSortal ex:InducedSeismicity .
 ex:seismic_record erp:fromTyping ex:typing_seismic_1 .
 ex:seismic_record erp:toTyping ex:typing_seismic_2 .
-ex:seismic_record erp:hasSupersessionWarrant ex:warrant_seismic_2 .
+ex:seismic_record erp:hasReorientationBasis ex:basis_seismic_2 .
 
 ex:chain_record_12 rdf:type erp:RetypingRecord .
 ex:chain_record_12 erp:retypingOccurrence ex:chain_event .
@@ -30,7 +30,7 @@ ex:chain_record_12 erp:earlierSortal ex:T1 .
 ex:chain_record_12 erp:laterSortal ex:T2 .
 ex:chain_record_12 erp:fromTyping ex:typing_chain_1 .
 ex:chain_record_12 erp:toTyping ex:typing_chain_2 .
-ex:chain_record_12 erp:hasSupersessionWarrant ex:warrant_chain_2 .
+ex:chain_record_12 erp:hasReorientationBasis ex:basis_chain_2 .
 
 ex:chain_record_23 rdf:type erp:RetypingRecord .
 ex:chain_record_23 erp:retypingOccurrence ex:chain_event .
@@ -40,4 +40,4 @@ ex:chain_record_23 erp:earlierSortal ex:T2 .
 ex:chain_record_23 erp:laterSortal ex:T3 .
 ex:chain_record_23 erp:fromTyping ex:typing_chain_2 .
 ex:chain_record_23 erp:toTyping ex:typing_chain_3 .
-ex:chain_record_23 erp:hasSupersessionWarrant ex:warrant_chain_3 .
+ex:chain_record_23 erp:hasReorientationBasis ex:basis_chain_3 .

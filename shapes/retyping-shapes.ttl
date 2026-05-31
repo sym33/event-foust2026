@@ -39,18 +39,18 @@ erp:ClassificatoryICEShape
 
 erp:RawTypingHistoryShape
     a sh:NodeShape ;
-    sh:targetSubjectsOf erp:supersedes ;
+    sh:targetSubjectsOf erp:reorients ;
     sh:property [
-        sh:path erp:hasSupersessionWarrant ;
-        sh:class erp:SupersessionWarrant ;
+        sh:path erp:hasReorientationBasis ;
+        sh:class erp:ReorientationBasis ;
         sh:minCount 1 ;
     ] ;
     sh:sparql [
-        sh:message "A superseding classificatory ICE must type the same occurrence under a distinct sortal from the superseded classificatory ICE." ;
+        sh:message "A reorienting classificatory ICE must type the same occurrence under a distinct sortal from the displaced classificatory ICE." ;
         sh:select """
             PREFIX erp: <https://w3id.org/event-retyping-pattern/>
             SELECT $this WHERE {
-              $this erp:supersedes ?earlier ;
+              $this erp:reorients ?earlier ;
                     erp:assertsTyping ?laterTyping .
               ?earlier erp:assertsTyping ?earlierTyping .
               ?laterTyping erp:typingOccurrence ?o2 ;
@@ -62,25 +62,27 @@ erp:RawTypingHistoryShape
         """ ;
     ] ;
     sh:sparql [
-        sh:message "A superseding classificatory ICE must carry a warrant that points to the superseded classificatory ICE and states a maintenance purpose." ;
+        sh:message "A reorienting classificatory ICE must carry a basis that points to the displaced classificatory ICE, states a maintenance purpose, gives a scope, and names an authorizing source." ;
         sh:select """
             PREFIX erp: <https://w3id.org/event-retyping-pattern/>
             SELECT $this WHERE {
-              $this erp:supersedes ?earlier .
+              $this erp:reorients ?earlier .
               FILTER NOT EXISTS {
-                $this erp:hasSupersessionWarrant ?w .
-                ?w erp:warrantedReplacementOf ?earlier ;
-                   erp:maintenancePurpose ?purpose .
+                $this erp:hasReorientationBasis ?b .
+                ?b erp:basisForReorientationOf ?earlier ;
+                   erp:maintenancePurpose ?purpose ;
+                   erp:basisScope ?scope ;
+                   erp:hasAuthorizingSource ?source .
               }
             }
         """ ;
     ] ;
     sh:sparql [
-        sh:message "A superseding classificatory ICE must be produced by a later classification act than the superseded classificatory ICE." ;
+        sh:message "A reorienting classificatory ICE must be produced by a later classification act than the displaced classificatory ICE." ;
         sh:select """
             PREFIX erp: <https://w3id.org/event-retyping-pattern/>
             SELECT $this WHERE {
-              $this erp:supersedes ?earlier ;
+              $this erp:reorients ?earlier ;
                     erp:assertsTyping ?laterTyping .
               ?earlier erp:assertsTyping ?earlierTyping .
               FILTER NOT EXISTS {
@@ -151,7 +153,7 @@ erp:RetypingRecordShape
         """ ;
     ] ;
     sh:sparql [
-        sh:message "The later classificatory ICE must supersede the earlier classificatory ICE." ;
+        sh:message "The later classificatory ICE must reorient the earlier classificatory ICE." ;
         sh:select """
             PREFIX erp: <https://w3id.org/event-retyping-pattern/>
             SELECT $this WHERE {
@@ -163,7 +165,7 @@ erp:RetypingRecordShape
               ?c2 erp:produces ?i2 .
               ?i1 erp:assertsTyping ?from .
               ?i2 erp:assertsTyping ?to .
-              FILTER NOT EXISTS { ?i2 erp:supersedes ?i1 }
+              FILTER NOT EXISTS { ?i2 erp:reorients ?i1 }
             }
         """ ;
     ] ;

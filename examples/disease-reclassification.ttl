@@ -5,12 +5,13 @@
 ex:AtypicalPneumoniaEpisode a erp:EventSortal .
 ex:COVID19Episode a erp:EventSortal .
 ex:CuratorTeam a erp:Agent .
+ex:PublicHealthCaseDefinitionWorkflow a erp:AuthorizationSource .
 ex:disease_episode_17 a erp:Occurrent .
 ex:classify_disease_1 a erp:ClassificationAct .
 ex:classify_disease_2 a erp:ClassificationAct .
 ex:ice_disease_1 a erp:InformationContentEntity .
 ex:ice_disease_2 a erp:InformationContentEntity .
-ex:warrant_disease_2 a erp:SupersessionWarrant .
+ex:basis_disease_2 a erp:ReorientationBasis .
 ex:typing_disease_1 a erp:TypingAssertion .
 ex:typing_disease_2 a erp:TypingAssertion .
 ex:classify_disease_1 erp:hasAgent ex:CuratorTeam .
@@ -26,7 +27,13 @@ ex:typing_disease_1 erp:typingOccurrence ex:disease_episode_17 .
 ex:typing_disease_2 erp:typingOccurrence ex:disease_episode_17 .
 ex:typing_disease_1 erp:typingSortal ex:AtypicalPneumoniaEpisode .
 ex:typing_disease_2 erp:typingSortal ex:COVID19Episode .
-ex:ice_disease_2 erp:supersedes ex:ice_disease_1 .
-ex:ice_disease_2 erp:hasSupersessionWarrant ex:warrant_disease_2 .
-ex:warrant_disease_2 erp:warrantedReplacementOf ex:ice_disease_1 .
-ex:warrant_disease_2 erp:maintenancePurpose "case maintenance after stabilized diagnostic criteria" .
+ex:ice_disease_2 erp:reorients ex:ice_disease_1 .
+ex:ice_disease_1 erp:refiguredBy ex:ice_disease_2 .
+ex:ice_disease_1 erp:hasHistoricalRole erp:DisplacedFrame .
+ex:ice_disease_1 erp:hasHistoricalRole erp:ReviewRelevantCommitment .
+ex:ice_disease_2 erp:hasHistoricalRole erp:CurrentFrame .
+ex:ice_disease_2 erp:hasReorientationBasis ex:basis_disease_2 .
+ex:basis_disease_2 erp:basisForReorientationOf ex:ice_disease_1 .
+ex:basis_disease_2 erp:maintenancePurpose "case maintenance after stabilized diagnostic criteria" .
+ex:basis_disease_2 erp:basisScope "public-health surveillance case maintenance" .
+ex:basis_disease_2 erp:hasAuthorizingSource ex:PublicHealthCaseDefinitionWorkflow .

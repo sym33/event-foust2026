@@ -8,7 +8,7 @@
 # R1. A later classification act re-types an earlier act when both acts produce
 # typing assertions about the same occurrence, the asserted sortals differ, the
 # earlier act precedes the later act, and the later information content entity
-# supersedes the earlier one with an explicit supersession warrant.
+# reorients the earlier one with an explicit, scoped, authorized reorientation basis.
 erp:ClassificationAct(?c1) ^
 erp:ClassificationAct(?c2) ^
 erp:InformationContentEntity(?i1) ^
@@ -24,21 +24,23 @@ erp:typingOccurrence(?a2, ?o) ^
 erp:typingSortal(?a1, ?t1) ^
 erp:typingSortal(?a2, ?t2) ^
 erp:precedes(?c1, ?c2) ^
-erp:supersedes(?i2, ?i1) ^
-erp:hasSupersessionWarrant(?i2, ?w) ^
-erp:warrantedReplacementOf(?w, ?i1) ^
-erp:maintenancePurpose(?w, ?p) ^
+erp:reorients(?i2, ?i1) ^
+erp:hasReorientationBasis(?i2, ?b) ^
+erp:basisForReorientationOf(?b, ?i1) ^
+erp:maintenancePurpose(?b, ?p) ^
+erp:basisScope(?b, ?s) ^
+erp:hasAuthorizingSource(?b, ?src) ^
 swrlb:notEqual(?t1, ?t2)
 -> erp:retypesAct(?c2, ?c1)
 
-# R2. The earlier typing is superseded for the occurrence.
+# R2. The earlier typing is displaced for the occurrence.
 erp:retypesAct(?c2, ?c1) ^
 erp:produces(?c1, ?i1) ^
 erp:assertsTyping(?i1, ?a1) ^
 erp:typingOccurrence(?a1, ?o) ^
 erp:typingSortal(?a1, ?t1)
--> erp:supersededTyping(?o, ?t1)
+-> erp:displacedTyping(?o, ?t1)
 
 # R3 is intentionally not expressed as pure SWRL: "current typing" requires
-# negation-as-failure over the absence of a later superseding typing assertion.
+# negation-as-failure over the absence of a later reorienting typing assertion.
 # Use queries/current-types.rq or the validation layer for that closed-world view.

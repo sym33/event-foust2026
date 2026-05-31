@@ -5,11 +5,13 @@ ASK {
   ?laterAct erp:produces ?laterICE .
   ?earlierAct erp:produces ?earlierICE ;
               erp:precedes ?laterAct .
-  ?laterICE erp:supersedes ?earlierICE ;
-            erp:hasSupersessionWarrant ?warrant ;
+  ?laterICE erp:reorients ?earlierICE ;
+            erp:hasReorientationBasis ?basis ;
             erp:assertsTyping ?laterTyping .
-  ?warrant erp:warrantedReplacementOf ?earlierICE ;
-           erp:maintenancePurpose ?purpose .
+  ?basis erp:basisForReorientationOf ?earlierICE ;
+         erp:maintenancePurpose ?purpose ;
+         erp:basisScope ?basisScope ;
+         erp:hasAuthorizingSource ?authorizingSource .
   ?earlierICE erp:assertsTyping ?earlierTyping .
   ?earlierTyping erp:typingOccurrence ex:contested_event ;
                  erp:typingSortal ?t1 .
