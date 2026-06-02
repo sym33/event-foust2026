@@ -22,6 +22,17 @@ The implementation uses the Semantic Web layers for different tasks:
   refigured classifications, and review-impact sets.
 - The Python validators provide reproducible regression checks for the examples.
 
+## Paper Claim Map
+
+| Paper claim | Artifact files | Check |
+| --- | --- | --- |
+| Re-typing preserves one occurrence while changing event sortal. | `examples/disease-reclassification.ttl`, `examples/seismic-reclassification.ttl`, `queries/derive-retypes.rq` | Four derived `Retypes` facts. |
+| Reorientation is not enrichment under a stable sortal. | `examples/enrichment-negative.ttl`, `queries/ask-no-enrichment-retyping.rq` | ASK returns `False`; no `Retypes` fact. |
+| Different labels without grounded reorientation remain contested. | `examples/contested-negative.ttl`, `queries/ask-no-contested-retyping.rq` | ASK returns `False`; no `Retypes` fact. |
+| Earlier classifications remain recoverable under changed roles. | `examples/chain-history.ttl`, `queries/refigured-classifications.rq`, `queries/displaced-types.rq` | Five refigured facts and four displaced-type rows. |
+| Current type is a maintenance view, not a truth claim. | `queries/current-types.rq`, `scripts/validate_examples.py` | Latest non-displaced typing is returned as current. |
+| Review salience is separated from review obligation. | `queries/review-impact.rq`, disease/seismic/chain examples | Six review-impact facts; chain remains salient without required review. |
+
 ## Directory Layout
 
 ```text
@@ -76,6 +87,13 @@ affected dependencies without deciding by itself which of them require action.
 ```
 
 ## Validation
+
+The validation doubles as an ablation over the pattern conditions:
+
+- Without a represented reorientation basis, different-sortal assertions remain contested and derive no `Retypes` fact.
+- Without sortal difference, same-sortal enrichment derives no `Retypes` fact.
+- Without role transition, displaced/current and refigured views cannot be recovered.
+- Without an attached review policy, dependent artifacts remain review-salient without becoming review-required.
 
 Run the dependency-free validator:
 
