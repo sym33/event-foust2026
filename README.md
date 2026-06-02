@@ -70,10 +70,9 @@ Retypes(c2,c1,o,T1,T2,p) iff
 
 Review impact is derived separately. A downstream artifact is review-salient
 when it depends on a displaced classificatory artifact. It becomes
-review-required only when the reorientation basis carries an explicit `erp:ReviewPolicy`
-or maintenance protocol. This keeps domain judgment inspectable: the
-pattern exposes the affected dependencies, while the domain policy decides which
-ones require action.
+review-required only when the reorientation basis carries an explicit
+`erp:ReviewPolicy` or maintenance protocol. The pattern therefore exposes the
+affected dependencies without deciding by itself which of them require action.
 ```
 
 ## Validation
@@ -139,8 +138,9 @@ Conforms: True
 classified as an atypical pneumonia episode and later as a COVID-19 episode.
 The earlier pneumonia artifact is kept as displaced and review-relevant; the
 later COVID-19 artifact becomes the current frame. Line-list and exposure-map
-artifacts depending on the earlier typing are review-required because the basis
-carries a public-health review policy.
+artifacts depending on the earlier typing are review-salient after
+reorientation, and the attached public-health review policy turns the relevant
+ones into required review actions.
 
 Expected result:
 
@@ -153,10 +153,11 @@ Retypes(classify_disease_2, classify_disease_1, disease_episode_17,
 
 `examples/seismic-reclassification.ttl` represents a recorded seismic
 occurrence first classified as a tectonic earthquake and later as induced
-seismicity. The tectonic classification remains auditable because earlier alerts, hazard
-assumptions, and institutional decisions may depend on it. Prior alert and
-hazard-aggregate artifacts become review-required when the catalog basis carries
-an impact-review policy.
+seismicity. The tectonic classification remains auditable because earlier
+alerts, hazard assumptions, and institutional decisions may depend on it. Prior
+alert and hazard-aggregate artifacts become review-salient after reorientation;
+the catalog impact-review policy determines when that salience becomes a
+required review action.
 
 Expected result:
 
