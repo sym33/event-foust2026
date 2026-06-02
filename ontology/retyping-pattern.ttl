@@ -42,6 +42,12 @@ erp:AuthorizationSource
     rdfs:label "authorization source"@en ;
     rdfs:comment "A workflow, publication, review body, rule, instrument-governed procedure, or community practice that licenses a reorientation basis for a stated maintenance purpose."@en .
 
+erp:ReviewPolicy
+    a owl:Class ;
+    rdfs:subClassOf erp:AuthorizationSource ;
+    rdfs:label "review policy"@en ;
+    rdfs:comment "A maintenance policy or review protocol that turns review-salient dependencies into required review actions for a selected scope or artifact class."@en .
+
 erp:ClassificationAct
     a owl:Class ;
     rdfs:subClassOf erp:Occurrent ;
@@ -204,7 +210,7 @@ erp:reviewRequiredAfter
 erp:hasReviewPolicy
     a owl:ObjectProperty ;
     rdfs:domain erp:ReorientationBasis ;
-    rdfs:range erp:AuthorizationSource ;
+    rdfs:range erp:ReviewPolicy ;
     rdfs:comment "Links a reorientation basis to the review policy or maintenance protocol that turns review salience into a required review action."@en .
 
 erp:fromTyping

@@ -37,7 +37,7 @@ ex:basis_seismic_2 erp:maintenancePurpose "catalog maintenance after induced-sei
 ex:basis_seismic_2 erp:basisScope "regional seismic catalog maintenance" .
 ex:basis_seismic_2 erp:hasAuthorizingSource ex:CatalogReviewWorkflow .
 
-ex:CatalogImpactReviewPolicy a erp:AuthorizationSource .
+ex:CatalogImpactReviewPolicy a erp:ReviewPolicy .
 ex:seismic_prior_alert a erp:InformationContentEntity .
 ex:seismic_hazard_aggregate a erp:InformationContentEntity .
 ex:seismic_prior_alert erp:dependsOnTyping ex:ice_seismic_1 .

@@ -50,7 +50,7 @@ scripts/validate_sparql.py          SPARQL query regression validator
 | reorientation | `erp:reorients` |
 | reorientation basis | `erp:ReorientationBasis`, `erp:hasReorientationBasis`, `erp:basisForReorientationOf`, `erp:maintenancePurpose`, `erp:basisScope`, `erp:hasAuthorizingSource` |
 | historical role | `erp:CurrentFrame`, `erp:DisplacedFrame`, `erp:ReviewRelevantCommitment`, `erp:ReviewSalientCommitment`, `erp:ReviewRequiredCommitment`, `erp:refiguredBy` |
-| impact review | `erp:dependsOnTyping`, `erp:hasReviewPolicy`, `erp:reviewSalientAfter`, `erp:reviewRequiredAfter`, `queries/review-impact.rq` |
+| impact review | `erp:ReviewPolicy`, `erp:dependsOnTyping`, `erp:hasReviewPolicy`, `erp:reviewSalientAfter`, `erp:reviewRequiredAfter`, `queries/review-impact.rq` |
 | re-typing | `erp:RetypingRecord` or derived `erp:retypesAct` |
 
 The positive derivation condition is:
@@ -70,8 +70,8 @@ Retypes(c2,c1,o,T1,T2,p) iff
 
 Review impact is derived separately. A downstream artifact is review-salient
 when it depends on a displaced classificatory artifact. It becomes
-review-required only when the reorientation basis carries an explicit review
-policy or maintenance protocol. This keeps domain judgment inspectable: the
+review-required only when the reorientation basis carries an explicit `erp:ReviewPolicy`
+or maintenance protocol. This keeps domain judgment inspectable: the
 pattern exposes the affected dependencies, while the domain policy decides which
 ones require action.
 ```
