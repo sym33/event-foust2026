@@ -36,3 +36,10 @@ ex:basis_seismic_2 erp:basisForReorientationOf ex:ice_seismic_1 .
 ex:basis_seismic_2 erp:maintenancePurpose "catalog maintenance after induced-seismicity review" .
 ex:basis_seismic_2 erp:basisScope "regional seismic catalog maintenance" .
 ex:basis_seismic_2 erp:hasAuthorizingSource ex:CatalogReviewWorkflow .
+
+ex:CatalogImpactReviewPolicy a erp:AuthorizationSource .
+ex:seismic_prior_alert a erp:InformationContentEntity .
+ex:seismic_hazard_aggregate a erp:InformationContentEntity .
+ex:seismic_prior_alert erp:dependsOnTyping ex:ice_seismic_1 .
+ex:seismic_hazard_aggregate erp:dependsOnTyping ex:ice_seismic_1 .
+ex:basis_seismic_2 erp:hasReviewPolicy ex:CatalogImpactReviewPolicy .

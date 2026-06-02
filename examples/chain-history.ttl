@@ -53,3 +53,6 @@ ex:basis_chain_3 erp:basisForReorientationOf ex:ice_chain_2 .
 ex:basis_chain_3 erp:maintenancePurpose "latest chain maintenance" .
 ex:basis_chain_3 erp:basisScope "regression chain maintenance" .
 ex:basis_chain_3 erp:hasAuthorizingSource ex:ChainReviewWorkflow .
+
+ex:chain_mapping_artifact a erp:InformationContentEntity .
+ex:chain_mapping_artifact erp:dependsOnTyping ex:ice_chain_1 .

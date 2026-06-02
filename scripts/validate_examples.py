@@ -46,6 +46,14 @@ class Refigured:
     reorienting_sortal: str
 
 
+@dataclass(frozen=True)
+class ReviewImpact:
+    dependent_artifact: str
+    prior_ice: str
+    reorienting_ice: str
+    status: str
+
+
 def expand(token: str, prefixes: dict[str, str]) -> str:
     token = token.strip()
     if token == "a":
@@ -197,6 +205,43 @@ def derive_refigured(triples: set[tuple[str, str, str]]) -> set[Refigured]:
     return out
 
 
+def derive_review_impact(triples: set[tuple[str, str, str]]) -> set[ReviewImpact]:
+    depends_on = ERP + "dependsOnTyping"
+    reorients = ERP + "reorients"
+    has_basis = ERP + "hasReorientationBasis"
+    has_policy = ERP + "hasReviewPolicy"
+
+    adjacency: dict[str, set[str]] = {}
+    for later_ice, predicate, prior_ice in triples:
+        if predicate == reorients:
+            adjacency.setdefault(later_ice, set()).add(prior_ice)
+
+    def earlier_chain(later_ice: str) -> set[str]:
+        seen: set[str] = set()
+        stack = list(adjacency.get(later_ice, set()))
+        while stack:
+            prior = stack.pop()
+            if prior in seen:
+                continue
+            seen.add(prior)
+            stack.extend(adjacency.get(prior, set()))
+        return seen
+
+    out: set[ReviewImpact] = set()
+    for dependent, _, prior_ice in triples:
+        if _ != depends_on:
+            continue
+        for later_ice in adjacency:
+            if prior_ice not in earlier_chain(later_ice):
+                continue
+            status = ERP + "ReviewSalientCommitment"
+            for basis in objects(triples, later_ice, has_basis):
+                if objects(triples, basis, has_policy):
+                    status = ERP + "ReviewRequiredCommitment"
+            out.add(ReviewImpact(dependent, prior_ice, later_ice, status))
+    return out
+
+
 def compact(value: str) -> str:
     return value.replace(EX, "ex:").replace(ERP, "erp:")
 
@@ -206,6 +251,7 @@ def main() -> None:
     triples = load_triples(example_paths)
     retypes = derive_retypes(triples)
     refigured = derive_refigured(triples)
+    review_impact = derive_review_impact(triples)
     current = current_types(triples, retypes)
     displaced = {(r.occurrence, r.earlier_sortal) for r in retypes}
     historical_role = ERP + "hasHistoricalRole"
@@ -232,6 +278,18 @@ def main() -> None:
     assert (EX + "chain_event", EX + "T2") not in current
     assert Refigured(EX + "ice_chain_1", EX + "ice_chain_3", EX + "chain_event", EX + "T1", EX + "T3") in refigured
     assert len(refigured) == 5
+    expected_review_impact = {
+        ReviewImpact(EX + "disease_line_list_entry", EX + "ice_disease_1", EX + "ice_disease_2", ERP + "ReviewRequiredCommitment"),
+        ReviewImpact(EX + "disease_exposure_map", EX + "ice_disease_1", EX + "ice_disease_2", ERP + "ReviewRequiredCommitment"),
+        ReviewImpact(EX + "seismic_prior_alert", EX + "ice_seismic_1", EX + "ice_seismic_2", ERP + "ReviewRequiredCommitment"),
+        ReviewImpact(EX + "seismic_hazard_aggregate", EX + "ice_seismic_1", EX + "ice_seismic_2", ERP + "ReviewRequiredCommitment"),
+        ReviewImpact(EX + "chain_mapping_artifact", EX + "ice_chain_1", EX + "ice_chain_2", ERP + "ReviewSalientCommitment"),
+        ReviewImpact(EX + "chain_mapping_artifact", EX + "ice_chain_1", EX + "ice_chain_3", ERP + "ReviewSalientCommitment"),
+    }
+    if review_impact != expected_review_impact:
+        missing = expected_review_impact - review_impact
+        extra = review_impact - expected_review_impact
+        raise AssertionError(f"Unexpected review-impact facts. Missing={missing}; Extra={extra}")
     expected_roles = {
         (EX + "ice_disease_1", historical_role, ERP + "DisplacedFrame"),
         (EX + "ice_disease_1", historical_role, ERP + "ReviewRelevantCommitment"),
@@ -267,6 +325,7 @@ def main() -> None:
         )
     print("Negative checks passed: enrichment and contested cases derive no Retypes facts.")
     print(f"Refigured classification facts: {len(refigured)}")
+    print(f"Review-impact facts: {len(review_impact)}")
     print(f"Historical role assertions checked: {len(expected_roles)}")
     print("Chain check passed: T1 and T2 displaced; T3 current.")
 

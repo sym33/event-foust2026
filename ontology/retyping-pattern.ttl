@@ -92,6 +92,16 @@ erp:ReviewRelevantCommitment
     a erp:HistoricalRole ;
     rdfs:label "review-relevant commitment"@en .
 
+erp:ReviewSalientCommitment
+    a erp:HistoricalRole ;
+    rdfs:label "review-salient commitment"@en ;
+    rdfs:comment "A displaced classificatory commitment whose downstream dependencies make it salient for review; salience alone does not entail that review is mandatory."@en .
+
+erp:ReviewRequiredCommitment
+    a erp:HistoricalRole ;
+    rdfs:label "review-required commitment"@en ;
+    rdfs:comment "A review-salient commitment for which an authorizing maintenance policy or review protocol requires review."@en .
+
 #################################################################
 # Object properties
 #################################################################
@@ -172,6 +182,30 @@ erp:refiguredBy
     rdfs:domain erp:InformationContentEntity ;
     rdfs:range erp:InformationContentEntity ;
     rdfs:comment "Links an earlier classificatory artifact to a later artifact whose reorientation changes the earlier artifact's maintenance role, directly or through a reorientation chain."@en .
+
+erp:dependsOnTyping
+    a owl:ObjectProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:InformationContentEntity ;
+    rdfs:comment "Links an annotation, mapping, aggregate, alert, report, or inference artifact to the classificatory artifact under which it was maintained."@en .
+
+erp:reviewSalientAfter
+    a owl:ObjectProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:InformationContentEntity ;
+    rdfs:comment "Links a downstream artifact to the later classificatory artifact whose reorientation makes that downstream dependency salient for review."@en .
+
+erp:reviewRequiredAfter
+    a owl:ObjectProperty ;
+    rdfs:domain erp:InformationContentEntity ;
+    rdfs:range erp:InformationContentEntity ;
+    rdfs:comment "Links a downstream artifact to the later classificatory artifact whose reorientation triggers review under an authorizing review policy or maintenance protocol."@en .
+
+erp:hasReviewPolicy
+    a owl:ObjectProperty ;
+    rdfs:domain erp:ReorientationBasis ;
+    rdfs:range erp:AuthorizationSource ;
+    rdfs:comment "Links a reorientation basis to the review policy or maintenance protocol that turns review salience into a required review action."@en .
 
 erp:fromTyping
     a owl:ObjectProperty ;

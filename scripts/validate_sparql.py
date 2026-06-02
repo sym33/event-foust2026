@@ -9,6 +9,7 @@ EXPECTED = {
     "displaced-types.rq": ("rows", 4),
     "refigured-classifications.rq": ("rows", 5),
     "current-types.rq": ("rows", 6),
+    "review-impact.rq": ("rows", 6),
     "construct-retyping-records.rq": ("triples", 40),
     "ask-no-enrichment-retyping.rq": ("ask", False),
     "ask-no-contested-retyping.rq": ("ask", False),

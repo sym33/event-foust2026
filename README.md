@@ -1,47 +1,26 @@
 # Event Re-typing Pattern Artifact
 
-This repository contains a machine-readable companion artifact for the event
-re-typing pattern. It turns the paper's conceptual distinction into a small
-OWL/SWRL/SHACL/SPARQL package with executable examples.
+This repository is the machine-readable companion artifact for the event
+re-typing pattern. It provides a small OWL/SWRL/SHACL/SPARQL package with
+examples and validators for occurrence-level classification history.
 
-## Why This Artifact Is Needed
+The artifact covers cases in which one traceable occurrence is first classified
+under one event sortal and later under another. The occurrence is preserved, the
+earlier classification remains auditable, and the later classification changes
+the maintenance role of the earlier record. This is stronger than enrichment
+under a stable sortal and more structured than a provenance note.
 
-The paper argues that event ontology and classificatory description cannot be
-cleanly separated in ontology engineering. Under a sortal, an occurrence is not
-only placed in time; it is represented as the kind of occurrence that supplies
-criteria for identity, internal structure, and relevant participants. This is
-already visible in Guarino et al.'s treatment of event descriptions: focal,
-internal, characterizing, and external components depend on the sortal under
-which the occurrence is described.
+The implementation uses the Semantic Web layers for different tasks:
 
-The re-typing case adds a further representational problem. A later
-classification may reorient an earlier one for the same traceable occurrence.
-That change is not a new event token, but it is more than additional metadata.
-It changes which sortal organizes the occurrence for ontology maintenance,
-querying, and downstream use.
-
-The history is not merely cumulative. A later reorientation can change the
-maintenance role of earlier records: an earlier type assignment may move from
-current organizing type to displaced frame, preliminary reading, or
-review-relevant commitment. The earlier artifact remains present and auditable,
-but it no longer functions in the same way once the later classification has
-reoriented the record. The artifact is needed because this case crosses the
-boundary between open-world ontological typing and closed-world maintenance
-operations.
-
-No single Semantic Web layer captures the pattern cleanly:
-
-- OWL supplies the vocabulary, typing constraints, inverses, and reified
+- OWL defines the vocabulary for occurrences, classification acts,
+  classificatory artifacts, event-sortal proxies, reorientation bases, and
   re-typing records.
-- SWRL states the positive derivation rule for when one classification act
-  re-types another.
-- SHACL checks integrity constraints that OWL alone does not reject, both for raw reorientation histories and for materialized re-typing records.
-- SPARQL derives operational views such as current types, displaced types, and
-  refigured classifications.
-- The dependency-free derivation validator gives a regression check for the
-  example cases used in the paper.
-
-The split follows from the modeling problem. Re-typing is not class subsumption; it is an n-ary relation among two classification acts, two information-content entities, one occurrence, two sortals, temporal order, and reorientation. The artifact models that non-cumulative maintenance pattern instead of reducing it to a single OWL class axiom.
+- SWRL states the positive derivation rule for supported reorientation.
+- SHACL checks integrity constraints over raw classification histories and
+  materialized re-typing records.
+- SPARQL derives operational views such as current types, displaced types,
+  refigured classifications, and review-impact sets.
+- The Python validators provide reproducible regression checks for the examples.
 
 ## Directory Layout
 
@@ -58,27 +37,26 @@ scripts/validate_sparql.py          SPARQL query regression validator
 
 ## Core Pattern
 
-The paper's formal pattern is represented as follows.
-
 | Paper term | Artifact encoding |
 | --- | --- |
 | occurrence `o` | `erp:Occurrent` |
-| event sortal `T` | `erp:EventSortal`, a metamodeling proxy for an event type/class |
+| event sortal `T` | `erp:EventSortal`, a proxy for an event type/class |
 | classification act `c` | `erp:ClassificationAct` |
 | classificatory artifact `i` | `erp:InformationContentEntity` |
 | typing assertion | `erp:TypingAssertion` |
 | act produces artifact | `erp:produces` |
-| artifact asserts type | `erp:assertsTyping` plus `erp:typingOccurrence` and `erp:typingSortal` |
+| artifact asserts type | `erp:assertsTyping`, `erp:typingOccurrence`, `erp:typingSortal` |
 | temporal order | `erp:precedes` |
 | reorientation | `erp:reorients` |
 | reorientation basis | `erp:ReorientationBasis`, `erp:hasReorientationBasis`, `erp:basisForReorientationOf`, `erp:maintenancePurpose`, `erp:basisScope`, `erp:hasAuthorizingSource` |
-| historical role shift | `erp:HistoricalRole`, `erp:CurrentFrame`, `erp:DisplacedFrame`, `erp:refiguredBy` |
+| historical role | `erp:CurrentFrame`, `erp:DisplacedFrame`, `erp:ReviewRelevantCommitment`, `erp:ReviewSalientCommitment`, `erp:ReviewRequiredCommitment`, `erp:refiguredBy` |
+| impact review | `erp:dependsOnTyping`, `erp:hasReviewPolicy`, `erp:reviewSalientAfter`, `erp:reviewRequiredAfter`, `queries/review-impact.rq` |
 | re-typing | `erp:RetypingRecord` or derived `erp:retypesAct` |
 
 The positive derivation condition is:
 
 ```text
-Retypes(c2,c1,o,T1,T2) iff
+Retypes(c2,c1,o,T1,T2,p) iff
   c1 produces i1,
   c2 produces i2,
   i1 asserts that o has sortal T1,
@@ -86,61 +64,83 @@ Retypes(c2,c1,o,T1,T2) iff
   T1 and T2 are distinct,
   c1 precedes c2,
   i2 reorients i1,
-  i2 carries a reorientation basis that points to i1, states a maintenance purpose,
-  gives a scope, and names an authorizing source or workflow.
+  i2 carries a reorientation basis that points to i1,
+  states a maintenance purpose, gives a scope,
+  and names an authorizing source or workflow.
+
+Review impact is derived separately. A downstream artifact is review-salient
+when it depends on a displaced classificatory artifact. It becomes
+review-required only when the reorientation basis carries an explicit review
+policy or maintenance protocol. This keeps domain judgment inspectable: the
+pattern exposes the affected dependencies, while the domain policy decides which
+ones require action.
 ```
 
-## Dependency-Free Derivation Validation
+## Validation
 
-The derivation validator checks the examples without requiring an RDF stack. Its expected output is:
+Run the dependency-free validator:
+
+```bash
+python3 scripts/validate_examples.py
+```
+
+Expected summary:
 
 ```text
 Validation passed.
 Loaded example files: 6
-Loaded triples: 196
+Loaded triples: 210
 Derived Retypes facts: 4
-  later=ex:classify_chain_2, earlier=ex:classify_chain_1, occurrence=ex:chain_event, from=ex:T1, to=ex:T2
-  later=ex:classify_chain_3, earlier=ex:classify_chain_2, occurrence=ex:chain_event, from=ex:T2, to=ex:T3
-  later=ex:classify_disease_2, earlier=ex:classify_disease_1, occurrence=ex:disease_episode_17, from=ex:AtypicalPneumoniaEpisode, to=ex:COVID19Episode
-  later=ex:classify_seismic_2, earlier=ex:classify_seismic_1, occurrence=ex:seismic_event_42, from=ex:TectonicEarthquake, to=ex:InducedSeismicity
 Negative checks passed: enrichment and contested cases derive no Retypes facts.
 Refigured classification facts: 5
+Review-impact facts: 6
 Historical role assertions checked: 10
 Chain check passed: T1 and T2 displaced; T3 current.
 ```
 
-The validator uses only the standard library. It parses the simple Turtle style
-used in `examples/`, derives the same re-typing facts as the SWRL/SPARQL
-specification, and checks the positive and negative cases.
+Run the SPARQL regression checks:
 
-## SHACL Validation
+```bash
+python3 scripts/validate_sparql.py
+```
 
-The SHACL validation uses pySHACL over the ontology and bundled example graphs.
-Its expected output is:
+Expected summary:
+
+```text
+derive-retypes.rq: 4 rows
+displaced-types.rq: 4 rows
+refigured-classifications.rq: 5 rows
+current-types.rq: 6 rows
+review-impact.rq: 6 rows
+construct-retyping-records.rq: 40 constructed triples
+ask-no-enrichment-retyping.rq: ASK False
+ask-no-contested-retyping.rq: ASK False
+SPARQL validation passed.
+```
+
+Run the SHACL check:
+
+```bash
+python3 scripts/validate_shacl.py
+```
+
+Expected output:
 
 ```text
 Validation Report
 Conforms: True
 ```
 
-This loads the ontology and all example graphs, including the materialized re-typing records, and checks both raw typing-history reorientations and reified records.
-
-## SPARQL Validation
-
-The SPARQL regression check loads the ontology and examples into RDFLib and checks the query results. Expected output includes four derived re-typing rows, four displaced-type rows, five refigured-classification rows, six current-type rows, 40 constructed record triples, and `false` for both negative ASK queries.
-
 ## Example Cases
 
 ### Disease Reclassification
 
-`examples/disease-reclassification.ttl` represents a case in which an
-occurrence first classified as an atypical pneumonia episode is later classified
-as a COVID-19 episode. The later classificatory artifact reorients the earlier
-one. The same occurrence is retained; the organizing sortal changes.
-The earlier pneumonia artifact is also assigned `erp:DisplacedFrame` and
-`erp:ReviewRelevantCommitment`; the later COVID-19 artifact is assigned
-`erp:CurrentFrame`. The example therefore records that the old classification
-has changed historical role, not merely that a newer fact was appended.
+`examples/disease-reclassification.ttl` represents an occurrence first
+classified as an atypical pneumonia episode and later as a COVID-19 episode.
+The earlier pneumonia artifact is kept as displaced and review-relevant; the
+later COVID-19 artifact becomes the current frame. Line-list and exposure-map
+artifacts depending on the earlier typing are review-required because the basis
+carries a public-health review policy.
 
 Expected result:
 
@@ -152,13 +152,11 @@ Retypes(classify_disease_2, classify_disease_1, disease_episode_17,
 ### Seismic Reclassification
 
 `examples/seismic-reclassification.ttl` represents a recorded seismic
-occurrence initially classified as a tectonic earthquake and later classified as
-induced seismicity after additional evidence. This is stronger than enrichment:
-the later sortal changes the relevant explanatory and maintenance commitments.
-The tectonic artifact is kept as a displaced and review-relevant commitment,
-because earlier alerts, hazard assumptions, and institutional decisions may
-still need to be audited under the older frame. The induced-seismicity artifact
-becomes the current frame for catalog maintenance.
+occurrence first classified as a tectonic earthquake and later as induced
+seismicity. The tectonic classification remains auditable because earlier alerts, hazard
+assumptions, and institutional decisions may depend on it. Prior alert and
+hazard-aggregate artifacts become review-required when the catalog basis carries
+an impact-review policy.
 
 Expected result:
 
@@ -169,9 +167,8 @@ Retypes(classify_seismic_2, classify_seismic_1, seismic_event_42,
 
 ### Enrichment Negative Case
 
-`examples/enrichment-negative.ttl` represents a later assertion about the same
-occurrence under the same sortal. It may add information, but it does not
-re-type the occurrence.
+`examples/enrichment-negative.ttl` adds information under the same sortal. It
+does not derive re-typing.
 
 Expected result:
 
@@ -181,9 +178,9 @@ No Retypes fact.
 
 ### Contested Negative Case
 
-`examples/contested-negative.ttl` represents two different classifications
-without a reorientation relation. The model records disagreement or coexistence,
-not re-typing.
+`examples/contested-negative.ttl` contains two different classifications without
+a reorientation relation. The graph records disagreement or coexistence, not
+re-typing.
 
 Expected result:
 
@@ -194,11 +191,12 @@ No Retypes fact.
 ### Chain History
 
 `examples/chain-history.ttl` represents a sequence of reorienting
-classifications. The current type is the final non-displaced sortal.
-It also materializes the non-cumulative part of the pattern: `ice_chain_3`
-refigures both `ice_chain_2` directly and `ice_chain_1` indirectly, so an
-earlier classification can change role because of a later event in the
-classification history.
+classifications. The final non-displaced sortal is current, while intermediate
+classifications remain recoverable. The case also checks indirect refiguration:
+`ice_chain_3` refigures both `ice_chain_2` directly and `ice_chain_1`
+indirectly. A mapping artifact depending on the first classification is
+review-salient across the chain; because no review policy is attached in this
+example, salience is not converted into a required review action.
 
 Expected result:
 
@@ -210,8 +208,8 @@ Current type: T3
 
 ## SPARQL Queries
 
-The queries assume the ontology and relevant example files have been loaded
-into one dataset.
+The queries assume that the ontology and relevant example graphs are loaded into
+one dataset.
 
 Derive re-typing facts:
 
@@ -229,12 +227,20 @@ sparql --data=ontology/retyping-pattern.ttl \
        --query=queries/construct-retyping-records.rq
 ```
 
-Find current types:
+Find current, displaced, and review-impact views:
 
 ```bash
 sparql --data=ontology/retyping-pattern.ttl \
        --data=examples/chain-history.ttl \
        --query=queries/current-types.rq
+
+sparql --data=ontology/retyping-pattern.ttl \
+       --data=examples/chain-history.ttl \
+       --query=queries/displaced-types.rq
+
+sparql --data=ontology/retyping-pattern.ttl \
+       --data=examples/disease-reclassification.ttl \
+       --query=queries/review-impact.rq
 ```
 
 Check negative cases:
@@ -249,33 +255,25 @@ sparql --data=ontology/retyping-pattern.ttl \
        --query=queries/ask-no-contested-retyping.rq
 ```
 
-Both ASK queries should return `false`. The bundled regression validator checks the expected counts for all queries.
+Both ASK queries should return `false`.
 
-## SHACL Validation
+## SHACL Coverage
 
-The SHACL shapes check the integrity of typing assertions, raw typing-history reorientations, and materialized re-typing records. After loading the ontology and examples, a SHACL engine should confirm that classificatory ICEs point to the same occurrence as their typing assertion and that reorienting classificatory ICEs support a genuine re-typing candidate. After adding `examples/materialized-retyping-records.ttl`, it should also validate the reified records:
+The SHACL shapes check that:
 
-- each typing assertion has exactly one occurrence and one sortal;
-- each raw reorientation used for re-typing connects the same occurrence under distinct sortals;
-- each raw reorientation used for re-typing carries a reorientation basis, maintenance purpose, scope, and authorizing source;
-- each raw reorientation is produced by a later classification act than the displaced typing;
-- each materialized re-typing record has one earlier and one later act;
-- the earlier and later sortals differ;
-- the later classificatory artifact reorients the earlier one;
-- the earlier act precedes the later act;
-- the record's occurrence matches the occurrence in both typing assertions.
+- typing assertions have exactly one occurrence and one sortal;
+- raw reorientations used for re-typing connect the same occurrence under
+  distinct sortals;
+- reorientations carry a basis, maintenance purpose, scope, and authorizing
+  source;
+- the reorienting classification act is later than the displaced one;
+- materialized re-typing records have one earlier and one later act;
+- record occurrences match the occurrences in both typing assertions.
 
-The bundled SHACL validator loads the required ontology, positive cases, negative cases, and materialized records together.
+## Scope
 
-## Modeling Limits
-
-This artifact is scoped to the re-typing maintenance pattern, not to a full metaphysics of events. It does not attempt to axiomatize every
-event relation, every BFO category, or all possible temporal logics. It captures
-the paper's target problem: preserving occurrence continuity while recording
-changed classificatory commitments.
-
-The division across OWL, SWRL, SHACL, and SPARQL is part of the claim. OWL gives
-the ontological vocabulary; SWRL and SPARQL derive the positive pattern; SHACL
-guards raw typing-history assertions and materialized records; the current-type
-view is closed-world and therefore is kept in SPARQL and in the validation layer rather
-than forced into OWL.
+The artifact is a reusable classification-history layer for event ontologies. It
+preserves one occurrence while recording changed classificatory commitments,
+current and displaced views, and the basis for reorientation. OWL supplies the
+vocabulary; SWRL and SPARQL derive the positive pattern; SHACL checks integrity;
+and the validators provide reproducible regression tests.

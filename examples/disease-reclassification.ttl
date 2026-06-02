@@ -37,3 +37,10 @@ ex:basis_disease_2 erp:basisForReorientationOf ex:ice_disease_1 .
 ex:basis_disease_2 erp:maintenancePurpose "case maintenance after stabilized diagnostic criteria" .
 ex:basis_disease_2 erp:basisScope "public-health surveillance case maintenance" .
 ex:basis_disease_2 erp:hasAuthorizingSource ex:PublicHealthCaseDefinitionWorkflow .
+
+ex:CaseReviewPolicy a erp:AuthorizationSource .
+ex:disease_line_list_entry a erp:InformationContentEntity .
+ex:disease_exposure_map a erp:InformationContentEntity .
+ex:disease_line_list_entry erp:dependsOnTyping ex:ice_disease_1 .
+ex:disease_exposure_map erp:dependsOnTyping ex:ice_disease_1 .
+ex:basis_disease_2 erp:hasReviewPolicy ex:CaseReviewPolicy .

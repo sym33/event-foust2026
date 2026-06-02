@@ -1,0 +1,18 @@
+PREFIX erp: <https://w3id.org/event-retyping-pattern/>
+
+SELECT DISTINCT ?dependentArtifact ?priorICE ?reorientingICE ?occurrence ?priorSortal ?reorientingSortal ?reviewStatus ?policy
+WHERE {
+  ?dependentArtifact erp:dependsOnTyping ?priorICE .
+  ?reorientingICE erp:reorients+ ?priorICE ;
+                  erp:assertsTyping ?reorientingTyping ;
+                  erp:hasReorientationBasis ?basis .
+  ?priorICE erp:assertsTyping ?priorTyping .
+  ?priorTyping erp:typingOccurrence ?occurrence ;
+               erp:typingSortal ?priorSortal .
+  ?reorientingTyping erp:typingOccurrence ?occurrence ;
+                     erp:typingSortal ?reorientingSortal .
+  FILTER (?priorSortal != ?reorientingSortal)
+  OPTIONAL { ?basis erp:hasReviewPolicy ?policy . }
+  BIND(IF(BOUND(?policy), erp:ReviewRequiredCommitment, erp:ReviewSalientCommitment) AS ?reviewStatus)
+}
+ORDER BY ?occurrence ?dependentArtifact ?reviewStatus
